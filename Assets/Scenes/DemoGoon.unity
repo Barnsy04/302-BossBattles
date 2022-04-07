@@ -864,5 +864,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: Goon
       objectReference: {fileID: 0}
+    - target: {fileID: 9091652335627716021, guid: ac13b72353ca13f47ada896dc6b10612,
+        type: 3}
+      propertyPath: gravity
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 9091652335627716021, guid: ac13b72353ca13f47ada896dc6b10612,
+        type: 3}
+      propertyPath: jumpImpulse
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 9091652335627716021, guid: ac13b72353ca13f47ada896dc6b10612,
+        type: 3}
+      propertyPath: footSeperateAmount
+      value: 0.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ac13b72353ca13f47ada896dc6b10612, type: 3}

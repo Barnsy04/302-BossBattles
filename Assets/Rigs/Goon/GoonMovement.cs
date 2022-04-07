@@ -7,24 +7,26 @@ public class GoonMovement : MonoBehaviour
     enum Mode
     {
         Idle,
-        Walk
+        Walk,
+        InAir
     }
 
     public FootRaycast footLeft;
-
     public FootRaycast footRight;
 
     public float speed = 2;
 
-    public float walkSpreadX = .2f;
-
+    public float footSeperateAmount = .2f;
     public float walkSpreadY = .4f;
-
     public float walkSpreadZ = .8f;
-
     public float walkFootSpeed = 4;
 
     private CharacterController pawn;
+
+    /// <summary>The current vertical velocity in meters/second.</summary>
+    public float velocityY = 0;
+    public float gravity = 50;
+    public float jumpImpulse = 50;
 
     private Mode mode = Mode.Idle;
 
@@ -33,6 +35,8 @@ public class GoonMovement : MonoBehaviour
     private float walkTime;
 
     private Camera cam;
+
+    private Quaternion targetRotation;
 
     void Start()
     {
@@ -55,16 +59,42 @@ public class GoonMovement : MonoBehaviour
         input = camForward * v + camRight * h;
         if (input.sqrMagnitude > 1) input.Normalize();
 
+        
+
         // set movement mode based on movement input:
         float threshold = .1f;
         mode = (input.sqrMagnitude > threshold * threshold) ? Mode.Walk : Mode.Idle;
 
-        pawn.SimpleMove(input * speed);
+        if(mode == Mode.Walk) targetRotation = Quaternion.LookRotation(input, Vector3.up);
+
+        if (pawn.isGrounded)
+        {
+            if (Input.GetButtonDown("Jump"))
+            {
+                velocityY = -jumpImpulse;
+            }
+        }
+
+        velocityY += gravity * Time.deltaTime;
+
+        pawn.Move((input * speed + Vector3.down * velocityY) * Time.deltaTime);
+
+        if (pawn.isGrounded)
+        {
+            velocityY = 0;
+        }
+        else
+        {
+            mode = Mode.InAir;
+        }
 
         Animate();
     }
     void Animate()
     {
+
+        transform.rotation = AnimMath.Ease(transform.rotation, targetRotation, .01f);
+
         switch (mode)
         {
             case Mode.Idle:
@@ -73,8 +103,22 @@ public class GoonMovement : MonoBehaviour
             case Mode.Walk:
                 AnimateWalk();
                 break;
+            case Mode.InAir:
+                AnimateInAir();
+                break;
         }
     }
+
+    void AnimateInAir()
+    {
+        //TODO
+
+        // lift legs?
+        // lift hands?
+        // adjust spikes / hair?
+        // use vertical velocity
+    }
+
     void AnimateIdle()
     {
         footLeft.SetPositionHome();
@@ -95,9 +139,14 @@ public class GoonMovement : MonoBehaviour
             float x = lateral * localDir.x;
             float z = lateral * localDir.z;
 
+            float alignment = Mathf.Abs(Vector3.Dot(localDir, Vector3.forward));
+            // 1 = forward
+            // -1 = backward
+            // 0 = strafing
+
             if (y < 0) y = 0;
 
-            foot.SetPositionOffset(new Vector3(x, y, z));
+            foot.SetPositionOffset(new Vector3(x, y, z), footSeperateAmount * alignment);
 
 
         };
